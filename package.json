@@ -1,5 +1,5 @@
 {
-  "name": "bula-ia",
+  "name": "clarabula-beta",
   "version": "0.1.0",
   "description": "MVP para resumir a bula de remedios a partir de uma foto usando OpenAI.",
   "private": true,
