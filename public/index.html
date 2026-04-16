@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bula IA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Merriweather:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-topbar">
+          <div class="brand">
+            <span class="brand-mark">+</span>
+            <div class="brand-copy">
+              <strong>Bula IA</strong>
+              <span>Leitura assistida de medicamentos</span>
+            </div>
+          </div>
+
+          <div class="hero-badge">Uso informativo com apoio de IA</div>
+        </div>
+
+        <div class="hero-layout">
+          <div class="hero-copy">
+            <p class="eyebrow">Tecnologia com foco em segurança</p>
+            <h1>Fotografe o remédio e visualize um resumo mais claro da bula.</h1>
+            <p class="lead">
+              Uma experiência pensada para saúde digital: linguagem objetiva,
+              alertas importantes e orientação cuidadosa para o usuário entender
+              melhor a embalagem do medicamento.
+            </p>
+
+            <ul class="hero-points">
+              <li>Leitura assistida da embalagem por imagem.</li>
+              <li>Resumo com foco em uso geral, cuidados e sinais de atenção.</li>
+              <li>Orientação clara de que o conteúdo não substitui um especialista.</li>
+            </ul>
+
+            <div class="warning-banner">
+              Este site e informativo e nao substitui consulta com medico
+              especialista, farmaceutico ou outro profissional de saude.
+            </div>
+          </div>
+
+          <aside class="trust-panel">
+            <p class="panel-label">Fluxo de atendimento</p>
+
+            <div class="trust-step">
+              <span>01</span>
+              <div>
+                <strong>Capture a embalagem</strong>
+                <p>Envie a foto da caixa ou blister com nome e dosagem visíveis.</p>
+              </div>
+            </div>
+
+            <div class="trust-step">
+              <span>02</span>
+              <div>
+                <strong>Receba um resumo objetivo</strong>
+                <p>A IA organiza as informações em português simples e direto.</p>
+              </div>
+            </div>
+
+            <div class="trust-step">
+              <span>03</span>
+              <div>
+                <strong>Confirme com a bula oficial</strong>
+                <p>O conteúdo serve como apoio inicial, não como decisão clínica.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="info-strip">
+        <article class="info-pill">
+          <strong>Design clínico</strong>
+          <span>Visual limpo, sereno e mais compatível com um produto de saúde.</span>
+        </article>
+        <article class="info-pill">
+          <strong>Orientação clara</strong>
+          <span>Resumo em linguagem acessível, com destaque para alertas e segurança.</span>
+        </article>
+        <article class="info-pill">
+          <strong>Uso responsável</strong>
+          <span>Reforço contínuo de que a análise não substitui consulta médica.</span>
+        </article>
+      </section>
+
+      <section class="grid">
+        <form class="card form-card" id="upload-form">
+          <div class="card-head">
+            <span class="section-tag">Entrada da imagem</span>
+            <h2>Enviar foto do medicamento</h2>
+            <p>
+              Tire uma foto nítida da frente da embalagem. Em celular, a câmera
+              traseira pode ser aberta automaticamente.
+            </p>
+          </div>
+
+          <label class="upload-zone" for="medicine-image">
+            <input
+              id="medicine-image"
+              name="medicine-image"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              required
+            />
+            <span class="upload-title">Selecionar ou tirar foto</span>
+            <span class="upload-copy">
+              Prefira imagens com boa luz, sem reflexo e com nome, dose e
+              princípio ativo aparentes.
+            </span>
+          </label>
+
+          <div class="scan-tips">
+            <div class="scan-tip">
+              <strong>Nome visível</strong>
+              <span>Ajuda a IA a identificar o medicamento com mais precisão.</span>
+            </div>
+            <div class="scan-tip">
+              <strong>Dosagem legível</strong>
+              <span>Melhora o contexto para um resumo mais útil e seguro.</span>
+            </div>
+            <div class="scan-tip">
+              <strong>Foto sem corte</strong>
+              <span>Evita interpretações incompletas sobre a embalagem.</span>
+            </div>
+          </div>
+
+          <div class="preview-wrap hidden" id="preview-wrap">
+            <img id="preview-image" alt="Pre-visualizacao do remedio" />
+          </div>
+
+          <button class="primary-button" type="submit" id="submit-button">
+            Analisar remedio
+          </button>
+
+          <p class="form-note">
+            O processamento foi pensado para apoio informativo inicial, com
+            linguagem voltada para segurança do usuário.
+          </p>
+        </form>
+
+        <section class="card result-card">
+          <div class="card-head">
+            <span class="section-tag">Saída da análise</span>
+            <h2>Resumo da bula</h2>
+            <p>
+              A resposta organiza os principais pontos do medicamento, incluindo
+              finalidade usual, modo de uso em termos gerais e alertas
+              importantes.
+            </p>
+          </div>
+
+          <div class="status" id="status">
+            Envie uma imagem para iniciar a analise.
+          </div>
+
+          <div class="result-guidance">
+            <div class="guidance-item">
+              <strong>O que esperar</strong>
+              <span>Identificação provável, uso geral, cuidados e sinais de atenção.</span>
+            </div>
+            <div class="guidance-item">
+              <strong>Quando desconfiar</strong>
+              <span>Foto desfocada, caixa cortada ou informações pouco legíveis.</span>
+            </div>
+          </div>
+
+          <article class="result hidden" id="result"></article>
+
+          <div class="disclaimer-box">
+            Nunca use este resumo como única fonte para decidir dose, tempo de
+            tratamento, troca de medicamento ou continuidade do uso. Em caso de
+            sintomas, reações, gravidez, amamentação, crianças, idosos ou uso
+            contínuo, procure um profissional.
+          </div>
+        </section>
+      </section>
+
+      <footer class="footer-note">
+        Bula IA oferece apoio informativo para leitura inicial da embalagem, mas
+        a bula oficial e a orientação profissional continuam sendo as
+        referências mais seguras.
+      </footer>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

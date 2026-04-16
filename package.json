@@ -1,0 +1,10 @@
+{
+  "name": "bula-ia",
+  "version": "0.1.0",
+  "description": "MVP para resumir a bula de remedios a partir de uma foto usando OpenAI.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
