@@ -14,7 +14,7 @@ MVP de um site em que o usuario tira foto de um remedio e recebe um resumo da bu
 
 - Upload de imagem ou foto direto da camera no celular.
 - Backend simples em Node.js sem dependencias externas.
-- Integracao com a OpenAI usando a `Responses API`.
+- Integracao com a API Gemini, que possui tier gratuita para testes e beta.
 - Resumo em portugues com foco em identificacao, uso geral e alertas.
 - Aviso visivel de que o site nao substitui consulta com medico especialista.
 
@@ -24,7 +24,7 @@ MVP de um site em que o usuario tira foto de um remedio e recebe um resumo da bu
 2. Preencha sua chave:
 
 ```env
-OPENAI_API_KEY=sua_chave_aqui
+GEMINI_API_KEY=sua_chave_aqui
 PORT=3000
 ```
 
@@ -68,7 +68,7 @@ git push -u origin main
 4. Em `Environment Variables`, adicione:
 
 ```env
-OPENAI_API_KEY=sua_chave_aqui
+GEMINI_API_KEY=sua_chave_aqui
 ```
 
 5. Mantenha as configuracoes padrao e clique em `Deploy`.
@@ -89,7 +89,7 @@ Use esse endereco para validar:
 
 - se a pagina abre
 - se o upload da foto funciona
-- se a variavel `OPENAI_API_KEY` foi configurada corretamente
+- se a variavel `GEMINI_API_KEY` foi configurada corretamente
 
 ### 4. Adicionar um dominio novo
 
@@ -133,7 +133,7 @@ A Vercel vai detectar o push e publicar automaticamente.
 
 ### 6. Checklist antes de publicar em producao
 
-- confirme que `OPENAI_API_KEY` foi adicionada na Vercel
+- confirme que `GEMINI_API_KEY` foi adicionada na Vercel
 - garanta que `.env` nao foi enviado para o GitHub
 - teste o envio de imagem em celular
 - confirme que o aviso medico continua visivel na pagina
@@ -141,6 +141,10 @@ A Vercel vai detectar o push e publicar automaticamente.
 
 ## Fontes oficiais
 
+- Gemini API: pricing e free tier
+  https://ai.google.dev/gemini-api/docs/pricing
+- Gemini API: visao e entrada por imagem
+  https://ai.google.dev/gemini-api/docs/vision
 - GitHub: criar novo repositorio
   https://docs.github.com/articles/creating-a-new-repository
 - Vercel: importar projeto existente
@@ -152,6 +156,7 @@ A Vercel vai detectar o push e publicar automaticamente.
 
 ## Observacoes importantes
 
+- A Gemini API oferece tier gratuita para testes, mas limites e disponibilidade podem mudar.
 - A IA pode errar a identificacao se a foto estiver desfocada, cortada ou com reflexo.
 - O ideal e fotografar a frente da caixa com nome, dosagem e principio ativo visiveis.
 - Este projeto e informativo e nao substitui bula oficial, consulta medica ou orientacao farmaceutica.

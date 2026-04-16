@@ -43,7 +43,7 @@ async function handleAnalyze(req, res) {
     const body = await readJsonBody(req);
     const result = await analyzeMedicineImage({
       image: body?.image,
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
     });
 
     sendJson(res, 200, result);

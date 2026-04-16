@@ -5,7 +5,7 @@ export async function POST(request) {
     const body = await request.json().catch(() => ({}));
     const result = await analyzeMedicineImage({
       image: body?.image,
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
     });
 
     return Response.json(result);
