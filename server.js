@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, "public");
 const envPath = path.join(__dirname, ".env");
+const MAX_REQUEST_BYTES = 5 * 1024 * 1024;
 
 await loadEnvFile();
 
@@ -20,13 +21,18 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    if (req.method !== "GET") {
+    if (req.method !== "GET" && req.method !== "HEAD") {
       sendJson(res, 405, { error: "Metodo nao permitido." });
       return;
     }
 
-    await serveStaticFile(req, res);
+    await serveStaticFile(req, res, req.method === "HEAD");
   } catch (error) {
+    if (error instanceof ApiError) {
+      sendJson(res, error.status, { error: error.message });
+      return;
+    }
+
     console.error(error);
     sendJson(res, 500, {
       error: "Ocorreu um erro interno ao processar a solicitacao."
@@ -40,7 +46,13 @@ server.listen(port, () => {
 
 async function handleAnalyze(req, res) {
   try {
-    const body = await readJsonBody(req);
+    const contentType = req.headers["content-type"] || "";
+
+    if (!contentType.includes("application/json")) {
+      throw new ApiError(415, "Envie a requisicao em JSON.");
+    }
+
+    const body = await readJsonBody(req, MAX_REQUEST_BYTES);
     const result = await analyzeMedicineImage({
       image: body?.image,
       apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
@@ -60,7 +72,7 @@ async function handleAnalyze(req, res) {
   }
 }
 
-async function serveStaticFile(req, res) {
+async function serveStaticFile(req, res, headOnly = false) {
   const urlPath = req.url === "/" ? "/index.html" : req.url;
   const filePath = path.normalize(path.join(publicDir, urlPath));
 
@@ -72,21 +84,36 @@ async function serveStaticFile(req, res) {
   try {
     const file = await fs.readFile(filePath);
     res.writeHead(200, { "Content-Type": getContentType(filePath) });
-    res.end(file);
+    res.end(headOnly ? undefined : file);
   } catch {
     sendJson(res, 404, { error: "Arquivo nao encontrado." });
   }
 }
 
-async function readJsonBody(req) {
+async function readJsonBody(req, maxBytes) {
   const chunks = [];
+  let totalBytes = 0;
 
   for await (const chunk of req) {
+    totalBytes += chunk.length;
+
+    if (totalBytes > maxBytes) {
+      throw new ApiError(
+        413,
+        "A imagem enviada e grande demais. Tente uma foto menor."
+      );
+    }
+
     chunks.push(chunk);
   }
 
   const raw = Buffer.concat(chunks).toString("utf8");
-  return raw ? JSON.parse(raw) : {};
+
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    throw new ApiError(400, "JSON invalido na requisicao.");
+  }
 }
 
 function sendJson(res, status, data) {
