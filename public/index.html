@@ -19,12 +19,12 @@
           <div class="brand">
             <span class="brand-mark">CB</span>
             <div class="brand-copy">
-              <strong>ClaraBula-beta</strong>
+              <strong id="brand-name">ClaraBula-beta</strong>
               <span>Leitura assistida de medicamentos</span>
             </div>
           </div>
 
-          <div class="hero-badge">Uso informativo com apoio de IA</div>
+          <div class="hero-badge" id="hero-badge">Uso informativo com apoio de IA</div>
         </div>
 
         <div class="hero-layout">
@@ -40,7 +40,7 @@
             <ul class="hero-points">
               <li>Leitura assistida da embalagem por imagem.</li>
               <li>Resumo com foco em uso geral, cuidados e sinais de atenção.</li>
-              <li>Orientação clara de que o conteúdo não substitui um especialista.</li>
+              <li>Orientacao clara de que o conteudo nao substitui um especialista.</li>
             </ul>
 
             <div class="warning-banner">
@@ -173,6 +173,10 @@
             Envie uma imagem para iniciar a analise.
           </div>
 
+          <div class="health-note" id="health-note" aria-live="polite">
+            Ambiente beta ativo com monitoramento basico de estabilidade.
+          </div>
+
           <div class="result-guidance">
             <div class="guidance-item">
               <strong>O que esperar</strong>
@@ -184,7 +188,12 @@
             </div>
           </div>
 
-          <article class="result hidden" id="result"></article>
+          <article
+            class="result hidden"
+            id="result"
+            aria-live="polite"
+            aria-label="Resultado da analise"
+          ></article>
 
           <div class="disclaimer-box">
             Nunca use este resumo como única fonte para decidir dose, tempo de
@@ -196,10 +205,14 @@
       </section>
 
       <footer class="footer-note">
-        ClaraBula-beta oferece apoio informativo para leitura inicial da
+        <span id="footer-brand">ClaraBula-beta</span> oferece apoio informativo para leitura inicial da
         embalagem, mas
         a bula oficial e a orientação profissional continuam sendo as
         referências mais seguras.
+        <span class="footer-links">
+          <a href="/privacy.html">Privacidade</a>
+          <a href="/termos.html">Termos</a>
+        </span>
       </footer>
     </main>
 

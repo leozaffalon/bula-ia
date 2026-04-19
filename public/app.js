@@ -6,6 +6,10 @@ const submitButton = document.querySelector("#submit-button");
 const statusBox = document.querySelector("#status");
 const resultBox = document.querySelector("#result");
 const consentCheckbox = document.querySelector("#consent-checkbox");
+const brandName = document.querySelector("#brand-name");
+const footerBrand = document.querySelector("#footer-brand");
+const heroBadge = document.querySelector("#hero-badge");
+const healthNote = document.querySelector("#health-note");
 
 const MAX_RAW_FILE_BYTES = 12 * 1024 * 1024;
 const MAX_OUTPUT_IMAGE_BYTES = 2 * 1024 * 1024;
@@ -13,12 +17,16 @@ const MAX_IMAGE_DIMENSION = 1600;
 const OUTPUT_IMAGE_QUALITY = 0.82;
 
 let imageDataUrl = "";
+let barcodeHints = [];
+
+bootstrapApp();
 
 fileInput.addEventListener("change", async (event) => {
   const file = event.target.files?.[0];
 
   if (!file) {
     imageDataUrl = "";
+    barcodeHints = [];
     previewWrap.classList.add("hidden");
     return;
   }
@@ -26,6 +34,7 @@ fileInput.addEventListener("change", async (event) => {
   try {
     validateSelectedFile(file);
     imageDataUrl = await optimizeImage(file);
+    barcodeHints = await detectBarcodeHints(file);
     previewImage.src = imageDataUrl;
     previewWrap.classList.remove("hidden");
     statusBox.textContent =
@@ -65,7 +74,12 @@ form.addEventListener("submit", async (event) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ image: imageDataUrl })
+      body: JSON.stringify({
+        image: imageDataUrl,
+        hints: {
+          barcodeValues: barcodeHints
+        }
+      })
     });
 
     const data = await response.json();
@@ -88,11 +102,12 @@ form.addEventListener("submit", async (event) => {
 function setLoadingState(isLoading) {
   submitButton.disabled = isLoading;
   submitButton.textContent = isLoading ? "Analisando..." : "Analisar remedio";
+  form.setAttribute("aria-busy", String(isLoading));
 }
 
 function validateSelectedFile(file) {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Selecione um arquivo de imagem valido.");
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    throw new Error("Use uma imagem JPG, PNG ou WEBP.");
   }
 
   if (file.size > MAX_RAW_FILE_BYTES) {
@@ -128,6 +143,42 @@ async function optimizeImage(file) {
   }
 
   return readFileAsDataUrl(blob);
+}
+
+async function detectBarcodeHints(file) {
+  if (!("BarcodeDetector" in window)) {
+    return [];
+  }
+
+  let bitmap;
+
+  try {
+    const supportedFormats = await window.BarcodeDetector.getSupportedFormats();
+
+    if (!supportedFormats.length) {
+      return [];
+    }
+
+    const detector = new window.BarcodeDetector({
+      formats: supportedFormats
+    });
+    bitmap = await createImageBitmap(file);
+    const detections = await detector.detect(bitmap);
+
+    return Array.from(
+      new Set(
+        detections
+          .map((item) => String(item.rawValue || "").trim())
+          .filter(Boolean)
+      )
+    ).slice(0, 3);
+  } catch {
+    return [];
+  } finally {
+    if (bitmap && typeof bitmap.close === "function") {
+      bitmap.close();
+    }
+  }
 }
 
 function loadImage(file) {
@@ -206,7 +257,7 @@ function renderAnalysis(analysis) {
         createFact("Principio ativo", medicine.activeIngredient),
         createFact("Dosagem", medicine.dosage),
         createFact("Forma farmaceutica", medicine.pharmaceuticalForm),
-        createFact("Confianca", medicine.confidence),
+        createConfidencePill(medicine.confidence),
         createParagraph(medicine.confidenceReason)
       ].join("")
     ),
@@ -248,6 +299,13 @@ function renderAnalysis(analysis) {
         "Procure medico ou farmaceutico em caso de duvida sobre o uso."
       )
     ),
+    createSection(
+      "Fontes oficiais recomendadas",
+      createOfficialSources(
+        analysis.officialSources,
+        medicine.name || medicine.activeIngredient
+      )
+    ),
     createSection("Aviso importante", createParagraph(analysis.finalDisclaimer))
   ].join("");
 }
@@ -268,6 +326,14 @@ function createParagraph(value) {
   return value ? `<p>${escapeHtml(value)}</p>` : "";
 }
 
+function createConfidencePill(value) {
+  if (!value) {
+    return "";
+  }
+
+  return `<p><strong>Confianca:</strong> <span class="confidence-pill confidence-${escapeHtml(value)}">${escapeHtml(value)}</span></p>`;
+}
+
 function createSubsection(title, items) {
   return `<p><strong>${escapeHtml(title)}</strong></p>${createList(items, "Nao foi possivel confirmar este ponto com seguranca.")}`;
 }
@@ -280,6 +346,106 @@ function createList(items, fallback) {
   return `<ul>${items
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("")}</ul>`;
+}
+
+function createOfficialSources(items, fallbackQuery) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return "<p>Nao ha links oficiais disponiveis para esta analise.</p>";
+  }
+
+  return `<div class="source-grid">${items
+    .map((item) => createOfficialSourceCard(item, fallbackQuery))
+    .join("")}</div>`;
+}
+
+function createOfficialSourceCard(item, fallbackQuery) {
+  const label = escapeHtml(item?.label || "Fonte oficial");
+  const description = escapeHtml(item?.description || "");
+  const url = escapeHtml(item?.url || "#");
+  const recommendedSearchTerm = escapeHtml(
+    item?.recommendedSearchTerm || fallbackQuery || ""
+  );
+  const searchCopy = recommendedSearchTerm
+    ? `<p><strong>Buscar por:</strong> ${recommendedSearchTerm}</p>`
+    : "";
+
+  return `<a class="source-card" href="${url}" target="_blank" rel="noreferrer">
+    <strong>${label}</strong>
+    <p>${description}</p>
+    ${searchCopy}
+  </a>`;
+}
+
+async function bootstrapApp() {
+  await Promise.allSettled([loadRuntimeConfig(), loadHealth()]);
+}
+
+async function loadRuntimeConfig() {
+  try {
+    const response = await fetch("/api/config", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const config = await response.json();
+    const displayName = config?.displayName || "ClaraBula-beta";
+
+    document.title = displayName;
+
+    if (brandName) {
+      brandName.textContent = displayName;
+    }
+
+    if (footerBrand) {
+      footerBrand.textContent = displayName;
+    }
+
+    if (heroBadge) {
+      heroBadge.textContent =
+        config?.stage === "production"
+          ? "Uso informativo com apoio de IA"
+          : `Uso informativo com apoio de IA • ${config?.stageLabel || "beta"}`;
+    }
+  } catch {
+    // Se a configuracao nao responder, mantemos o branding padrao da pagina.
+  }
+}
+
+async function loadHealth() {
+  try {
+    const response = await fetch("/api/health", {
+      headers: {
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const payload = await response.json();
+    const telemetry = payload?.telemetry || {};
+
+    if (healthNote) {
+      healthNote.textContent =
+        `Ambiente ${escapeInlineText(payload?.stage || "beta")} ativo. ` +
+        `${Number(telemetry.analyzeRequests || 0)} analises recebidas nesta instancia.`;
+    }
+  } catch {
+    if (healthNote) {
+      healthNote.textContent =
+        "Ambiente beta ativo. O monitoramento tecnico pode ficar indisponivel temporariamente.";
+    }
+  }
+}
+
+function escapeInlineText(value) {
+  return String(value || "").trim();
 }
 
 function escapeHtml(value) {
