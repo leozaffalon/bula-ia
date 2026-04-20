@@ -36,16 +36,31 @@
         <div class="hero-layout row g-4 align-items-start">
           <div class="hero-copy col-12 col-xl-7">
             <p class="eyebrow">Tecnologia com foco em segurança</p>
-            <h1>Fotografe o remédio e visualize um resumo mais claro da bula.</h1>
+            <h1>Entenda a embalagem do remédio com mais clareza em poucos segundos.</h1>
             <p class="lead">
-              Uma experiência pensada para saúde digital: linguagem objetiva,
-              alertas importantes e orientação cuidadosa para o usuário entender
-              melhor a embalagem do medicamento.
+              Tire uma foto, receba um resumo simples e confira os pontos mais
+              importantes antes de buscar a bula oficial ou orientação
+              profissional.
             </p>
 
+            <div class="hero-quickfacts">
+              <div class="quickfact">
+                <strong>1 foto</strong>
+                <span>Envie a frente da embalagem com nome e dosagem.</span>
+              </div>
+              <div class="quickfact">
+                <strong>Resumo curto</strong>
+                <span>Veja uso geral, cuidados e alertas principais.</span>
+              </div>
+              <div class="quickfact">
+                <strong>Fonte oficial</strong>
+                <span>Receba atalhos para confirmar a bula na Anvisa.</span>
+              </div>
+            </div>
+
             <ul class="hero-points">
-              <li>Leitura assistida da embalagem por imagem.</li>
-              <li>Resumo com foco em uso geral, cuidados e sinais de atenção.</li>
+              <li>Leitura da embalagem por imagem com linguagem simples.</li>
+              <li>Resumo focado no que costuma importar primeiro para o usuario.</li>
               <li>Orientacao clara de que o conteudo nao substitui um especialista.</li>
             </ul>
 
@@ -105,11 +120,26 @@
           <form class="card form-card h-100" id="upload-form">
             <div class="card-head">
               <span class="section-tag">Entrada da imagem</span>
-              <h2>Enviar foto do medicamento</h2>
+              <h2>1. Envie a foto do medicamento</h2>
               <p>
-                Tire uma foto nítida da frente da embalagem. Em celular, a câmera
+                Tire uma foto nitida da frente da embalagem. Em celular, a camera
                 traseira pode ser aberta automaticamente.
               </p>
+            </div>
+
+            <div class="workflow-strip">
+              <div class="workflow-pill">
+                <strong>Foto</strong>
+                <span>Caixa ou blister</span>
+              </div>
+              <div class="workflow-pill">
+                <strong>Analise</strong>
+                <span>Resumo guiado</span>
+              </div>
+              <div class="workflow-pill">
+                <strong>Conferencia</strong>
+                <span>Bula oficial</span>
+              </div>
             </div>
 
             <label class="upload-zone" for="medicine-image">
@@ -124,7 +154,7 @@
               <span class="upload-title">Selecionar ou tirar foto</span>
               <span class="upload-copy">
                 Prefira imagens com boa luz, sem reflexo e com nome, dose e
-                princípio ativo aparentes. A imagem sera otimizada antes do envio.
+                principio ativo aparentes. A imagem sera otimizada antes do envio.
               </span>
             </label>
 
@@ -147,8 +177,8 @@
 
             <div class="hint-panel">
               <div class="hint-head">
-                <strong>Pistas opcionais</strong>
-                <span>Preencha apenas se voce quiser ajudar a IA quando a foto estiver ruim.</span>
+                <strong>2. Pistas opcionais</strong>
+                <span>Preencha apenas se quiser ajudar a analise quando a foto estiver ruim ou incompleta.</span>
               </div>
 
               <div class="row g-3">
@@ -211,8 +241,8 @@
             </label>
 
             <p class="form-note">
-              O processamento foi pensado para apoio informativo inicial, com
-              linguagem voltada para segurança do usuário.
+              3. Confirme o envio e receba um resumo informativo em linguagem
+              mais clara para leitura inicial.
             </p>
           </form>
         </div>
@@ -221,11 +251,10 @@
           <section class="card result-card h-100">
             <div class="card-head">
               <span class="section-tag">Saída da análise</span>
-              <h2>Resumo da bula</h2>
+              <h2>Resumo da bula em linguagem mais simples</h2>
               <p>
-                A resposta organiza os principais pontos do medicamento, incluindo
-                finalidade usual, modo de uso em termos gerais e alertas
-                importantes.
+                Aqui voce ve primeiro o que foi identificado, o nivel de
+                confianca e os cuidados mais relevantes para checagem rapida.
               </p>
             </div>
 
@@ -237,14 +266,19 @@
               Ambiente beta ativo com monitoramento basico de estabilidade.
             </div>
 
+            <div class="clarity-banner">
+              <strong>Como ler este resultado</strong>
+              <p>Primeiro confira o remedio identificado. Depois veja alertas, limites da analise e os links oficiais.</p>
+            </div>
+
             <div class="result-guidance">
               <div class="guidance-item">
-                <strong>O que esperar</strong>
-                <span>Identificação provável, evidências da embalagem, limites da análise e orientações de atenção.</span>
+                <strong>O que voce vai ver</strong>
+                <span>Medicamento identificado, evidencias da imagem, alertas, proximos passos e links oficiais.</span>
               </div>
               <div class="guidance-item">
-                <strong>Quando desconfiar</strong>
-                <span>Foto desfocada, caixa cortada ou informações pouco legíveis.</span>
+                <strong>Quando revisar com cuidado</strong>
+                <span>Foto desfocada, caixa cortada, dosagem ilegivel ou confianca baixa na identificacao.</span>
               </div>
             </div>
 
@@ -283,8 +317,8 @@
             <span class="section-tag">Historico local</span>
             <h2>Analises recentes neste dispositivo</h2>
             <p>
-              O historico fica apenas no navegador para facilitar comparacoes e
-              revisao rapida do beta.
+              O historico fica apenas no navegador para facilitar comparacoes,
+              retomada rapida e validacao do beta.
             </p>
           </div>
           <button class="secondary-button secondary-button-inline" type="button" id="clear-history-button">
