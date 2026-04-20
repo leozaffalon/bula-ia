@@ -103,114 +103,197 @@
       <section class="grid row g-4">
         <div class="col-12 col-xl-5">
           <form class="card form-card h-100" id="upload-form">
-          <div class="card-head">
-            <span class="section-tag">Entrada da imagem</span>
-            <h2>Enviar foto do medicamento</h2>
-            <p>
-              Tire uma foto nítida da frente da embalagem. Em celular, a câmera
-              traseira pode ser aberta automaticamente.
+            <div class="card-head">
+              <span class="section-tag">Entrada da imagem</span>
+              <h2>Enviar foto do medicamento</h2>
+              <p>
+                Tire uma foto nítida da frente da embalagem. Em celular, a câmera
+                traseira pode ser aberta automaticamente.
+              </p>
+            </div>
+
+            <label class="upload-zone" for="medicine-image">
+              <input
+                id="medicine-image"
+                name="medicine-image"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                required
+              />
+              <span class="upload-title">Selecionar ou tirar foto</span>
+              <span class="upload-copy">
+                Prefira imagens com boa luz, sem reflexo e com nome, dose e
+                princípio ativo aparentes. A imagem sera otimizada antes do envio.
+              </span>
+            </label>
+
+            <div class="scan-tips">
+              <div class="scan-tip">
+                <strong>Nome visível</strong>
+                <span>Ajuda a IA a identificar o medicamento com mais precisão.</span>
+              </div>
+              <div class="scan-tip">
+                <strong>Dosagem legível</strong>
+                <span>Melhora o contexto para um resumo mais útil e seguro.</span>
+              </div>
+              <div class="scan-tip">
+                <strong>Foto sem corte</strong>
+                <span>Evita interpretações incompletas sobre a embalagem.</span>
+              </div>
+            </div>
+
+            <div class="quality-note hidden" id="quality-note"></div>
+
+            <div class="hint-panel">
+              <div class="hint-head">
+                <strong>Pistas opcionais</strong>
+                <span>Preencha apenas se voce quiser ajudar a IA quando a foto estiver ruim.</span>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="field-label" for="medicine-name-hint">Nome do remedio</label>
+                  <input
+                    class="field-input"
+                    id="medicine-name-hint"
+                    name="medicine-name-hint"
+                    type="text"
+                    placeholder="Ex.: Dipirona"
+                  />
+                </div>
+                <div class="col-12 col-md-6">
+                  <label class="field-label" for="active-ingredient-hint">Principio ativo</label>
+                  <input
+                    class="field-input"
+                    id="active-ingredient-hint"
+                    name="active-ingredient-hint"
+                    type="text"
+                    placeholder="Ex.: dipirona monoidratada"
+                  />
+                </div>
+                <div class="col-12">
+                  <label class="field-label" for="manufacturer-hint">Empresa ou laboratorio</label>
+                  <input
+                    class="field-input"
+                    id="manufacturer-hint"
+                    name="manufacturer-hint"
+                    type="text"
+                    placeholder="Ex.: EMS, Neo Quimica, Ache"
+                  />
+                </div>
+                <div class="col-12">
+                  <label class="field-label" for="notes-hint">Observacao adicional</label>
+                  <textarea
+                    class="field-input field-textarea"
+                    id="notes-hint"
+                    name="notes-hint"
+                    placeholder="Ex.: foto com reflexo, verso da caixa, blister separado"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="preview-wrap hidden" id="preview-wrap">
+              <img id="preview-image" alt="Pre-visualizacao do remedio" />
+            </div>
+
+            <button class="primary-button" type="submit" id="submit-button">
+              Analisar remedio
+            </button>
+
+            <label class="consent-box" for="consent-checkbox">
+              <input id="consent-checkbox" type="checkbox" />
+              <span>
+                Concordo com o envio temporario da imagem para analise automatizada
+                por IA com finalidade informativa.
+              </span>
+            </label>
+
+            <p class="form-note">
+              O processamento foi pensado para apoio informativo inicial, com
+              linguagem voltada para segurança do usuário.
             </p>
-          </div>
-
-          <label class="upload-zone" for="medicine-image">
-            <input
-              id="medicine-image"
-              name="medicine-image"
-              type="file"
-              accept="image/*"
-              capture="environment"
-              required
-            />
-            <span class="upload-title">Selecionar ou tirar foto</span>
-            <span class="upload-copy">
-              Prefira imagens com boa luz, sem reflexo e com nome, dose e
-              princípio ativo aparentes. A imagem sera otimizada antes do envio.
-            </span>
-          </label>
-
-          <div class="scan-tips">
-            <div class="scan-tip">
-              <strong>Nome visível</strong>
-              <span>Ajuda a IA a identificar o medicamento com mais precisão.</span>
-            </div>
-            <div class="scan-tip">
-              <strong>Dosagem legível</strong>
-              <span>Melhora o contexto para um resumo mais útil e seguro.</span>
-            </div>
-            <div class="scan-tip">
-              <strong>Foto sem corte</strong>
-              <span>Evita interpretações incompletas sobre a embalagem.</span>
-            </div>
-          </div>
-
-          <div class="preview-wrap hidden" id="preview-wrap">
-            <img id="preview-image" alt="Pre-visualizacao do remedio" />
-          </div>
-
-          <button class="primary-button" type="submit" id="submit-button">
-            Analisar remedio
-          </button>
-
-          <label class="consent-box" for="consent-checkbox">
-            <input id="consent-checkbox" type="checkbox" />
-            <span>
-              Concordo com o envio temporario da imagem para analise automatizada
-              por IA com finalidade informativa.
-            </span>
-          </label>
-
-          <p class="form-note">
-            O processamento foi pensado para apoio informativo inicial, com
-            linguagem voltada para segurança do usuário.
-          </p>
           </form>
         </div>
 
         <div class="col-12 col-xl-7">
           <section class="card result-card h-100">
-          <div class="card-head">
-            <span class="section-tag">Saída da análise</span>
-            <h2>Resumo da bula</h2>
+            <div class="card-head">
+              <span class="section-tag">Saída da análise</span>
+              <h2>Resumo da bula</h2>
+              <p>
+                A resposta organiza os principais pontos do medicamento, incluindo
+                finalidade usual, modo de uso em termos gerais e alertas
+                importantes.
+              </p>
+            </div>
+
+            <div class="status" id="status">
+              Envie uma imagem para iniciar a analise.
+            </div>
+
+            <div class="health-note" id="health-note" aria-live="polite">
+              Ambiente beta ativo com monitoramento basico de estabilidade.
+            </div>
+
+            <div class="result-guidance">
+              <div class="guidance-item">
+                <strong>O que esperar</strong>
+                <span>Identificação provável, evidências da embalagem, limites da análise e orientações de atenção.</span>
+              </div>
+              <div class="guidance-item">
+                <strong>Quando desconfiar</strong>
+                <span>Foto desfocada, caixa cortada ou informações pouco legíveis.</span>
+              </div>
+            </div>
+
+            <div class="result-actions hidden" id="result-actions">
+              <button class="secondary-button" type="button" id="copy-result-button">
+                Copiar resumo
+              </button>
+              <button class="secondary-button" type="button" id="share-result-button">
+                Compartilhar
+              </button>
+              <button class="secondary-button" type="button" id="clear-result-button">
+                Limpar
+              </button>
+            </div>
+
+            <article
+              class="result hidden"
+              id="result"
+              aria-live="polite"
+              aria-label="Resultado da analise"
+            ></article>
+
+            <div class="disclaimer-box">
+              Nunca use este resumo como única fonte para decidir dose, tempo de
+              tratamento, troca de medicamento ou continuidade do uso. Em caso de
+              sintomas, reações, gravidez, amamentação, crianças, idosos ou uso
+              contínuo, procure um profissional.
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="card history-card">
+        <div class="history-head">
+          <div>
+            <span class="section-tag">Historico local</span>
+            <h2>Analises recentes neste dispositivo</h2>
             <p>
-              A resposta organiza os principais pontos do medicamento, incluindo
-              finalidade usual, modo de uso em termos gerais e alertas
-              importantes.
+              O historico fica apenas no navegador para facilitar comparacoes e
+              revisao rapida do beta.
             </p>
           </div>
+          <button class="secondary-button secondary-button-inline" type="button" id="clear-history-button">
+            Limpar historico
+          </button>
+        </div>
 
-          <div class="status" id="status">
-            Envie uma imagem para iniciar a analise.
-          </div>
-
-          <div class="health-note" id="health-note" aria-live="polite">
-            Ambiente beta ativo com monitoramento basico de estabilidade.
-          </div>
-
-          <div class="result-guidance">
-            <div class="guidance-item">
-              <strong>O que esperar</strong>
-              <span>Identificação provável, evidências da embalagem, limites da análise e orientações de atenção.</span>
-            </div>
-            <div class="guidance-item">
-              <strong>Quando desconfiar</strong>
-              <span>Foto desfocada, caixa cortada ou informações pouco legíveis.</span>
-            </div>
-          </div>
-
-          <article
-            class="result hidden"
-            id="result"
-            aria-live="polite"
-            aria-label="Resultado da analise"
-          ></article>
-
-          <div class="disclaimer-box">
-            Nunca use este resumo como única fonte para decidir dose, tempo de
-            tratamento, troca de medicamento ou continuidade do uso. Em caso de
-            sintomas, reações, gravidez, amamentação, crianças, idosos ou uso
-            contínuo, procure um profissional.
-          </div>
-          </section>
+        <div class="history-list" id="history-list">
+          <p class="history-empty">Nenhuma analise salva ainda.</p>
         </div>
       </section>
 

@@ -10,14 +10,32 @@ const brandName = document.querySelector("#brand-name");
 const footerBrand = document.querySelector("#footer-brand");
 const heroBadge = document.querySelector("#hero-badge");
 const healthNote = document.querySelector("#health-note");
+const qualityNote = document.querySelector("#quality-note");
+const medicineNameHint = document.querySelector("#medicine-name-hint");
+const activeIngredientHint = document.querySelector("#active-ingredient-hint");
+const manufacturerHint = document.querySelector("#manufacturer-hint");
+const notesHint = document.querySelector("#notes-hint");
+const resultActions = document.querySelector("#result-actions");
+const copyResultButton = document.querySelector("#copy-result-button");
+const shareResultButton = document.querySelector("#share-result-button");
+const clearResultButton = document.querySelector("#clear-result-button");
+const historyList = document.querySelector("#history-list");
+const clearHistoryButton = document.querySelector("#clear-history-button");
 
 const MAX_RAW_FILE_BYTES = 12 * 1024 * 1024;
 const MAX_OUTPUT_IMAGE_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
 const OUTPUT_IMAGE_QUALITY = 0.82;
+const MIN_RECOMMENDED_DIMENSION = 900;
+const LOW_DIMENSION_THRESHOLD = 700;
+const HISTORY_STORAGE_KEY = "clarabula-analysis-history";
+const MAX_HISTORY_ITEMS = 8;
 
 let imageDataUrl = "";
 let barcodeHints = [];
+let imageQualityReport = null;
+let currentAnalysis = null;
+let currentAnalysisText = "";
 
 bootstrapApp();
 
@@ -33,17 +51,23 @@ fileInput.addEventListener("change", async (event) => {
 
   try {
     validateSelectedFile(file);
-    imageDataUrl = await optimizeImage(file);
+    const preparedImage = await optimizeImage(file);
+    imageDataUrl = preparedImage.dataUrl;
+    imageQualityReport = preparedImage.imageQuality;
     barcodeHints = await detectBarcodeHints(file);
     previewImage.src = imageDataUrl;
     previewWrap.classList.remove("hidden");
+    renderQualityNote(imageQualityReport);
     statusBox.textContent =
       "Imagem otimizada com sucesso. Clique em analisar para gerar um resumo da bula.";
     resultBox.classList.add("hidden");
     resultBox.innerHTML = "";
+    resultActions.classList.add("hidden");
   } catch (error) {
     imageDataUrl = "";
     previewWrap.classList.add("hidden");
+    imageQualityReport = null;
+    renderQualityNote(null);
     statusBox.textContent = error.message;
   }
 });
@@ -77,7 +101,12 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify({
         image: imageDataUrl,
         hints: {
-          barcodeValues: barcodeHints
+          barcodeValues: barcodeHints,
+          medicineName: medicineNameHint.value.trim(),
+          activeIngredient: activeIngredientHint.value.trim(),
+          manufacturer: manufacturerHint.value.trim(),
+          notes: notesHint.value.trim(),
+          imageQuality: imageQualityReport
         }
       })
     });
@@ -88,8 +117,12 @@ form.addEventListener("submit", async (event) => {
       throw new Error(data.error || "Nao foi possivel analisar a imagem.");
     }
 
+    currentAnalysis = data.analysis;
+    currentAnalysisText = analysisToPlainText(data.analysis);
     resultBox.innerHTML = renderAnalysis(data.analysis);
     resultBox.classList.remove("hidden");
+    resultActions.classList.remove("hidden");
+    saveAnalysisToHistory(data.analysis);
     statusBox.textContent =
       "Resumo gerado. Confira com a bula oficial e com um profissional se houver qualquer duvida.";
   } catch (error) {
@@ -97,6 +130,78 @@ form.addEventListener("submit", async (event) => {
   } finally {
     setLoadingState(false);
   }
+});
+
+copyResultButton.addEventListener("click", async () => {
+  if (!currentAnalysisText) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(currentAnalysisText);
+    statusBox.textContent = "Resumo copiado para a area de transferencia.";
+  } catch {
+    statusBox.textContent = "Nao foi possivel copiar agora. Tente novamente.";
+  }
+});
+
+shareResultButton.addEventListener("click", async () => {
+  if (!currentAnalysisText) {
+    return;
+  }
+
+  if (!navigator.share) {
+    statusBox.textContent =
+      "Compartilhamento direto nao esta disponivel neste navegador. Use o botao de copiar.";
+    return;
+  }
+
+  try {
+    await navigator.share({
+      title: document.title,
+      text: currentAnalysisText
+    });
+  } catch {
+    // Cancelamento de compartilhamento nao precisa virar erro visivel.
+  }
+});
+
+clearResultButton.addEventListener("click", () => {
+  clearCurrentResult();
+  statusBox.textContent = "Resultado limpo. Voce pode analisar outra imagem.";
+});
+
+clearHistoryButton.addEventListener("click", () => {
+  localStorage.removeItem(HISTORY_STORAGE_KEY);
+  renderHistory([]);
+  statusBox.textContent = "Historico local removido deste dispositivo.";
+});
+
+historyList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-history-id]");
+
+  if (!button) {
+    return;
+  }
+
+  const historyItems = loadHistory();
+  const selected = historyItems.find((item) => item.id === button.dataset.historyId);
+
+  if (!selected) {
+    return;
+  }
+
+  currentAnalysis = selected.analysis;
+  currentAnalysisText = analysisToPlainText(selected.analysis);
+  resultBox.innerHTML = renderAnalysis(selected.analysis);
+  resultBox.classList.remove("hidden");
+  resultActions.classList.remove("hidden");
+  statusBox.textContent =
+    "Analise recuperada do historico local deste dispositivo.";
+  window.scrollTo({
+    top: resultBox.getBoundingClientRect().top + window.scrollY - 100,
+    behavior: "smooth"
+  });
 });
 
 function setLoadingState(isLoading) {
@@ -142,7 +247,10 @@ async function optimizeImage(file) {
     );
   }
 
-  return readFileAsDataUrl(blob);
+  return {
+    dataUrl: await readFileAsDataUrl(blob),
+    imageQuality: assessImageQuality(file, image)
+  };
 }
 
 async function detectBarcodeHints(file) {
@@ -293,10 +401,21 @@ function renderAnalysis(analysis) {
       )
     ),
     createSection(
+      "Qualidade da imagem",
+      createImageQualitySection(analysis.imageQuality)
+    ),
+    createSection(
       "Quando procurar um profissional",
       createList(
         analysis.seekProfessionalHelp,
         "Procure medico ou farmaceutico em caso de duvida sobre o uso."
+      )
+    ),
+    createSection(
+      "Proximos passos sugeridos",
+      createList(
+        analysis.suggestedNextSteps,
+        "Confira a bula oficial antes de tomar qualquer decisao sobre o medicamento."
       )
     ),
     createSection(
@@ -332,6 +451,26 @@ function createConfidencePill(value) {
   }
 
   return `<p><strong>Confianca:</strong> <span class="confidence-pill confidence-${escapeHtml(value)}">${escapeHtml(value)}</span></p>`;
+}
+
+function createImageQualitySection(imageQuality) {
+  if (!imageQuality || typeof imageQuality !== "object") {
+    return "<p>Nao houve avaliacao estruturada da qualidade da imagem.</p>";
+  }
+
+  return [
+    `<p><strong>Legibilidade:</strong> <span class="confidence-pill confidence-${escapeHtml(
+      imageQuality.legibility === "boa"
+        ? "alta"
+        : imageQuality.legibility === "regular"
+          ? "media"
+          : "baixa"
+    )}">${escapeHtml(imageQuality.legibility || "baixa")}</span></p>`,
+    createList(
+      imageQuality.issues,
+      "A IA nao apontou problemas relevantes de leitura na imagem."
+    )
+  ].join("");
 }
 
 function createSubsection(title, items) {
@@ -378,6 +517,7 @@ function createOfficialSourceCard(item, fallbackQuery) {
 
 async function bootstrapApp() {
   await Promise.allSettled([loadRuntimeConfig(), loadHealth()]);
+  renderHistory(loadHistory());
 }
 
 async function loadRuntimeConfig() {
@@ -446,6 +586,187 @@ async function loadHealth() {
 
 function escapeInlineText(value) {
   return String(value || "").trim();
+}
+
+function assessImageQuality(file, image) {
+  const issues = [];
+  const smallestSide = Math.min(image.width, image.height);
+  let legibility = "boa";
+
+  if (smallestSide < LOW_DIMENSION_THRESHOLD) {
+    legibility = "baixa";
+    issues.push("Resolucao baixa para leitura segura da embalagem.");
+  } else if (smallestSide < MIN_RECOMMENDED_DIMENSION) {
+    legibility = "regular";
+    issues.push("A imagem pode ficar com texto pequeno para leitura da dosagem.");
+  }
+
+  if (file.size > 7 * 1024 * 1024) {
+    issues.push("Arquivo original pesado, o que costuma indicar foto pouco otimizada.");
+  }
+
+  if (image.width / image.height > 2 || image.height / image.width > 2) {
+    issues.push("Enquadramento muito alongado, com chance de cortar informacoes relevantes.");
+    legibility = legibility === "boa" ? "regular" : legibility;
+  }
+
+  return {
+    legibility,
+    issues,
+    originalWidth: image.width,
+    originalHeight: image.height
+  };
+}
+
+function renderQualityNote(report) {
+  if (!report) {
+    qualityNote.classList.add("hidden");
+    qualityNote.innerHTML = "";
+    return;
+  }
+
+  const label =
+    report.legibility === "boa"
+      ? "boa"
+      : report.legibility === "regular"
+        ? "regular"
+        : "baixa";
+  const issues = report.issues.length
+    ? `<ul>${report.issues.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
+    : "<p>A qualidade inicial parece adequada para a analise.</p>";
+
+  qualityNote.innerHTML = `
+    <strong>Qualidade estimada da foto: ${escapeHtml(label)}</strong>
+    <p>${escapeHtml(`${report.originalWidth} x ${report.originalHeight} px`)}</p>
+    ${issues}
+  `;
+  qualityNote.classList.remove("hidden");
+}
+
+function saveAnalysisToHistory(analysis) {
+  const history = loadHistory();
+  const medicine = analysis?.identifiedMedicine || {};
+  const nextHistory = [
+    {
+      id: createClientId(),
+      createdAt: new Date().toISOString(),
+      medicineName: medicine.name || "Medicamento nao identificado",
+      confidence: medicine.confidence || "baixa",
+      activeIngredient: medicine.activeIngredient || "",
+      analysis
+    },
+    ...history
+  ].slice(0, MAX_HISTORY_ITEMS);
+
+  localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(nextHistory));
+  renderHistory(nextHistory);
+}
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function renderHistory(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    historyList.innerHTML =
+      '<p class="history-empty">Nenhuma analise salva ainda.</p>';
+    return;
+  }
+
+  historyList.innerHTML = items
+    .map((item) => {
+      const dateLabel = new Date(item.createdAt).toLocaleString("pt-BR", {
+        dateStyle: "short",
+        timeStyle: "short"
+      });
+
+      return `
+        <button class="history-item" type="button" data-history-id="${escapeHtml(item.id)}">
+          <span class="history-item-top">
+            <strong>${escapeHtml(item.medicineName || "Analise salva")}</strong>
+            <span class="confidence-pill confidence-${escapeHtml(
+              item.confidence || "baixa"
+            )}">${escapeHtml(item.confidence || "baixa")}</span>
+          </span>
+          <span class="history-item-meta">${escapeHtml(item.activeIngredient || "Sem principio ativo confirmado")}</span>
+          <span class="history-item-meta">${escapeHtml(dateLabel)}</span>
+        </button>
+      `;
+    })
+    .join("");
+}
+
+function analysisToPlainText(analysis) {
+  const sections = [];
+  const medicine = analysis?.identifiedMedicine || {};
+  const summary = analysis?.bulaResumo || {};
+
+  sections.push("Remedio identificado");
+  sections.push(`Nome: ${medicine.name || "Nao identificado"}`);
+  sections.push(`Principio ativo: ${medicine.activeIngredient || "Nao confirmado"}`);
+  sections.push(`Dosagem: ${medicine.dosage || "Nao confirmada"}`);
+  sections.push(`Forma farmaceutica: ${medicine.pharmaceuticalForm || "Nao confirmada"}`);
+  sections.push(`Confianca: ${medicine.confidence || "baixa"}`);
+
+  appendArraySection(sections, "Evidencias na imagem", analysis?.evidenceInImage);
+  appendArraySection(sections, "Para que costuma ser usado", summary.commonUses);
+  appendArraySection(sections, "Cuidados gerais", summary.generalCare);
+  appendArraySection(sections, "Alertas", summary.warnings);
+  appendArraySection(sections, "Efeitos colaterais comuns", summary.commonSideEffects);
+  appendArraySection(sections, "Interacoes", summary.interactions);
+  appendArraySection(sections, "Limites da analise", analysis?.analysisLimits);
+  appendArraySection(sections, "Qualidade da imagem", analysis?.imageQuality?.issues);
+  appendArraySection(sections, "Quando procurar um profissional", analysis?.seekProfessionalHelp);
+  appendArraySection(sections, "Proximos passos sugeridos", analysis?.suggestedNextSteps);
+  appendArraySection(
+    sections,
+    "Fontes oficiais recomendadas",
+    (analysis?.officialSources || []).map((item) =>
+      `${item.label}: ${item.url}${item.recommendedSearchTerm ? ` | buscar por ${item.recommendedSearchTerm}` : ""}`
+    )
+  );
+
+  if (analysis?.finalDisclaimer) {
+    sections.push("Aviso importante");
+    sections.push(analysis.finalDisclaimer);
+  }
+
+  return sections.join("\n");
+}
+
+function appendArraySection(target, title, values) {
+  target.push(title);
+
+  if (!Array.isArray(values) || values.length === 0) {
+    target.push("- Nao informado");
+    return;
+  }
+
+  for (const value of values) {
+    target.push(`- ${value}`);
+  }
+}
+
+function clearCurrentResult() {
+  currentAnalysis = null;
+  currentAnalysisText = "";
+  resultBox.classList.add("hidden");
+  resultBox.innerHTML = "";
+  resultActions.classList.add("hidden");
+}
+
+function createClientId() {
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+
+  return `analysis-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
 function escapeHtml(value) {
