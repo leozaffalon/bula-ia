@@ -82,7 +82,7 @@ form.addEventListener("submit", async (event) => {
 
   if (!consentCheckbox.checked) {
     statusBox.textContent =
-      "Confirme o envio temporario da imagem para analise por IA antes de continuar.";
+      "Confirme o envio temporário da imagem para análise por IA antes de continuar.";
     return;
   }
 
@@ -114,7 +114,7 @@ form.addEventListener("submit", async (event) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || "Nao foi possivel analisar a imagem.");
+      throw new Error(data.error || "Não foi possível analisar a imagem.");
     }
 
     currentAnalysis = data.analysis;
@@ -124,7 +124,7 @@ form.addEventListener("submit", async (event) => {
     resultActions.classList.remove("hidden");
     saveAnalysisToHistory(data.analysis);
     statusBox.textContent =
-      "Resumo gerado. Confira com a bula oficial e com um profissional se houver qualquer duvida.";
+      "Resumo gerado. Confira a bula oficial e procure um profissional se houver qualquer dúvida.";
   } catch (error) {
     statusBox.textContent = error.message;
   } finally {
@@ -139,9 +139,9 @@ copyResultButton.addEventListener("click", async () => {
 
   try {
     await navigator.clipboard.writeText(currentAnalysisText);
-    statusBox.textContent = "Resumo copiado para a area de transferencia.";
+    statusBox.textContent = "Resumo copiado para a área de transferência.";
   } catch {
-    statusBox.textContent = "Nao foi possivel copiar agora. Tente novamente.";
+    statusBox.textContent = "Não foi possível copiar agora. Tente novamente.";
   }
 });
 
@@ -152,7 +152,7 @@ shareResultButton.addEventListener("click", async () => {
 
   if (!navigator.share) {
     statusBox.textContent =
-      "Compartilhamento direto nao esta disponivel neste navegador. Use o botao de copiar.";
+      "O compartilhamento direto não está disponível neste navegador. Use o botão de copiar.";
     return;
   }
 
@@ -168,13 +168,13 @@ shareResultButton.addEventListener("click", async () => {
 
 clearResultButton.addEventListener("click", () => {
   clearCurrentResult();
-  statusBox.textContent = "Resultado limpo. Voce pode analisar outra imagem.";
+  statusBox.textContent = "Resultado limpo. Você pode analisar outra imagem.";
 });
 
 clearHistoryButton.addEventListener("click", () => {
   localStorage.removeItem(HISTORY_STORAGE_KEY);
   renderHistory([]);
-  statusBox.textContent = "Historico local removido deste dispositivo.";
+  statusBox.textContent = "Histórico local removido deste dispositivo.";
 });
 
 historyList.addEventListener("click", (event) => {
@@ -197,7 +197,7 @@ historyList.addEventListener("click", (event) => {
   resultBox.classList.remove("hidden");
   resultActions.classList.remove("hidden");
   statusBox.textContent =
-    "Analise recuperada do historico local deste dispositivo.";
+    "Análise recuperada do histórico local deste dispositivo.";
   window.scrollTo({
     top: resultBox.getBoundingClientRect().top + window.scrollY - 100,
     behavior: "smooth"
@@ -206,7 +206,7 @@ historyList.addEventListener("click", (event) => {
 
 function setLoadingState(isLoading) {
   submitButton.disabled = isLoading;
-  submitButton.textContent = isLoading ? "Analisando..." : "Analisar remedio";
+  submitButton.textContent = isLoading ? "Analisando..." : "Analisar remédio";
   form.setAttribute("aria-busy", String(isLoading));
 }
 
@@ -216,7 +216,7 @@ function validateSelectedFile(file) {
   }
 
   if (file.size > MAX_RAW_FILE_BYTES) {
-    throw new Error("A imagem original e grande demais. Use um arquivo de ate 12 MB.");
+    throw new Error("A imagem original é grande demais. Use um arquivo de até 12 MB.");
   }
 }
 
@@ -230,7 +230,7 @@ async function optimizeImage(file) {
   const context = canvas.getContext("2d");
 
   if (!context) {
-    throw new Error("Nao foi possivel preparar a imagem para analise.");
+    throw new Error("Não foi possível preparar a imagem para análise.");
   }
 
   context.drawImage(image, 0, 0, width, height);
@@ -243,7 +243,7 @@ async function optimizeImage(file) {
 
   if (blob.size > MAX_OUTPUT_IMAGE_BYTES) {
     throw new Error(
-      "A imagem ainda ficou pesada demais apos a otimizacao. Tente cortar melhor a foto."
+      "A imagem ainda ficou pesada demais após a otimização. Tente cortar melhor a foto."
     );
   }
 
@@ -351,7 +351,7 @@ function readFileAsDataUrl(file) {
 
 function renderAnalysis(analysis) {
   if (!analysis || typeof analysis !== "object") {
-    return "<p>Nao foi possivel montar o resumo estruturado.</p>";
+    return "<p>Não foi possível montar o resumo estruturado.</p>";
   }
 
   const medicine = analysis.identifiedMedicine || {};
@@ -359,21 +359,21 @@ function renderAnalysis(analysis) {
 
   return [
     createSection(
-      "Remedio identificado",
+      "Remédio identificado",
       [
         createFact("Nome", medicine.name),
-        createFact("Principio ativo", medicine.activeIngredient),
+        createFact("Princípio ativo", medicine.activeIngredient),
         createFact("Dosagem", medicine.dosage),
-        createFact("Forma farmaceutica", medicine.pharmaceuticalForm),
+        createFact("Forma farmacêutica", medicine.pharmaceuticalForm),
         createConfidencePill(medicine.confidence),
         createParagraph(medicine.confidenceReason)
       ].join("")
     ),
     createSection(
-      "Evidencias na imagem",
+      "Evidências na imagem",
       createList(
         analysis.evidenceInImage,
-        "Nao foi possivel ler evidencias suficientes na embalagem."
+        "Não foi possível ler evidências suficientes na embalagem."
       )
     ),
     createSection(
@@ -382,22 +382,22 @@ function renderAnalysis(analysis) {
         createParagraph(summary.confidenceNote),
         createSubsection("Para que costuma ser usado", summary.commonUses),
         createSubsection("Cuidados gerais de uso", summary.generalCare),
-        createSubsection("Alertas e contraindicacoes", summary.warnings),
+        createSubsection("Alertas e contraindicações", summary.warnings),
         createSubsection(
-          "Possiveis efeitos colaterais comuns",
+          "Possíveis efeitos colaterais comuns",
           summary.commonSideEffects
         ),
         createSubsection(
-          "Interacoes e cuidados importantes",
+          "Interações e cuidados importantes",
           summary.interactions
         )
       ].join("")
     ),
     createSection(
-      "Limites da analise",
+      "Limites da análise",
       createList(
         analysis.analysisLimits,
-        "Nao houve detalhes adicionais sobre os limites da analise."
+        "Não houve detalhes adicionais sobre os limites da análise."
       )
     ),
     createSection(
@@ -408,14 +408,14 @@ function renderAnalysis(analysis) {
       "Quando procurar um profissional",
       createList(
         analysis.seekProfessionalHelp,
-        "Procure medico ou farmaceutico em caso de duvida sobre o uso."
+        "Procure um médico ou farmacêutico em caso de dúvida sobre o uso."
       )
     ),
     createSection(
-      "Proximos passos sugeridos",
+      "Próximos passos sugeridos",
       createList(
         analysis.suggestedNextSteps,
-        "Confira a bula oficial antes de tomar qualquer decisao sobre o medicamento."
+        "Confira a bula oficial antes de tomar qualquer decisão sobre o medicamento."
       )
     ),
     createSection(
@@ -450,12 +450,12 @@ function createConfidencePill(value) {
     return "";
   }
 
-  return `<p><strong>Confianca:</strong> <span class="confidence-pill confidence-${escapeHtml(value)}">${escapeHtml(value)}</span></p>`;
+  return `<p><strong>Confiança:</strong> <span class="confidence-pill confidence-${escapeHtml(value)}">${escapeHtml(value)}</span></p>`;
 }
 
 function createImageQualitySection(imageQuality) {
   if (!imageQuality || typeof imageQuality !== "object") {
-    return "<p>Nao houve avaliacao estruturada da qualidade da imagem.</p>";
+    return "<p>Não houve avaliação estruturada da qualidade da imagem.</p>";
   }
 
   return [
@@ -468,13 +468,13 @@ function createImageQualitySection(imageQuality) {
     )}">${escapeHtml(imageQuality.legibility || "baixa")}</span></p>`,
     createList(
       imageQuality.issues,
-      "A IA nao apontou problemas relevantes de leitura na imagem."
+      "A IA não apontou problemas relevantes de leitura na imagem."
     )
   ].join("");
 }
 
 function createSubsection(title, items) {
-  return `<p><strong>${escapeHtml(title)}</strong></p>${createList(items, "Nao foi possivel confirmar este ponto com seguranca.")}`;
+  return `<p><strong>${escapeHtml(title)}</strong></p>${createList(items, "Não foi possível confirmar este ponto com segurança.")}`;
 }
 
 function createList(items, fallback) {
@@ -489,7 +489,7 @@ function createList(items, fallback) {
 
 function createOfficialSources(items, fallbackQuery) {
   if (!Array.isArray(items) || items.length === 0) {
-    return "<p>Nao ha links oficiais disponiveis para esta analise.</p>";
+    return "<p>Não há links oficiais disponíveis para esta análise.</p>";
   }
 
   return `<div class="source-grid">${items
@@ -533,7 +533,7 @@ async function loadRuntimeConfig() {
     }
 
     const config = await response.json();
-    const displayName = config?.displayName || "ClaraBula-beta";
+    const displayName = config?.displayName || "ClaraBula beta";
 
     document.title = displayName;
 
@@ -574,12 +574,12 @@ async function loadHealth() {
     if (healthNote) {
       healthNote.textContent =
         `Ambiente ${escapeInlineText(payload?.stage || "beta")} ativo. ` +
-        `${Number(telemetry.analyzeRequests || 0)} analises recebidas nesta instancia.`;
+        `${Number(telemetry.analyzeRequests || 0)} análises recebidas nesta instância.`;
     }
   } catch {
     if (healthNote) {
       healthNote.textContent =
-        "Ambiente beta ativo. O monitoramento tecnico pode ficar indisponivel temporariamente.";
+        "Ambiente beta ativo. O monitoramento técnico pode ficar indisponível temporariamente.";
     }
   }
 }
@@ -595,18 +595,18 @@ function assessImageQuality(file, image) {
 
   if (smallestSide < LOW_DIMENSION_THRESHOLD) {
     legibility = "baixa";
-    issues.push("Resolucao baixa para leitura segura da embalagem.");
+    issues.push("Resolução baixa para leitura segura da embalagem.");
   } else if (smallestSide < MIN_RECOMMENDED_DIMENSION) {
     legibility = "regular";
     issues.push("A imagem pode ficar com texto pequeno para leitura da dosagem.");
   }
 
   if (file.size > 7 * 1024 * 1024) {
-    issues.push("Arquivo original pesado, o que costuma indicar foto pouco otimizada.");
+    issues.push("Arquivo original pesado, o que pode indicar uma foto pouco otimizada.");
   }
 
   if (image.width / image.height > 2 || image.height / image.width > 2) {
-    issues.push("Enquadramento muito alongado, com chance de cortar informacoes relevantes.");
+    issues.push("Enquadramento muito alongado, com chance de cortar informações relevantes.");
     legibility = legibility === "boa" ? "regular" : legibility;
   }
 
@@ -633,7 +633,7 @@ function renderQualityNote(report) {
         : "baixa";
   const issues = report.issues.length
     ? `<ul>${report.issues.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`
-    : "<p>A qualidade inicial parece adequada para a analise.</p>";
+    : "<p>A qualidade inicial parece adequada para a análise.</p>";
 
   qualityNote.innerHTML = `
     <strong>Qualidade estimada da foto: ${escapeHtml(label)}</strong>
@@ -650,7 +650,7 @@ function saveAnalysisToHistory(analysis) {
     {
       id: createClientId(),
       createdAt: new Date().toISOString(),
-      medicineName: medicine.name || "Medicamento nao identificado",
+      medicineName: medicine.name || "Medicamento não identificado",
       confidence: medicine.confidence || "baixa",
       activeIngredient: medicine.activeIngredient || "",
       analysis
@@ -675,7 +675,7 @@ function loadHistory() {
 function renderHistory(items) {
   if (!Array.isArray(items) || items.length === 0) {
     historyList.innerHTML =
-      '<p class="history-empty">Nenhuma analise salva ainda.</p>';
+      '<p class="history-empty">Nenhuma análise salva ainda.</p>';
     return;
   }
 
@@ -689,12 +689,12 @@ function renderHistory(items) {
       return `
         <button class="history-item" type="button" data-history-id="${escapeHtml(item.id)}">
           <span class="history-item-top">
-            <strong>${escapeHtml(item.medicineName || "Analise salva")}</strong>
+            <strong>${escapeHtml(item.medicineName || "Análise salva")}</strong>
             <span class="confidence-pill confidence-${escapeHtml(
               item.confidence || "baixa"
             )}">${escapeHtml(item.confidence || "baixa")}</span>
           </span>
-          <span class="history-item-meta">${escapeHtml(item.activeIngredient || "Sem principio ativo confirmado")}</span>
+          <span class="history-item-meta">${escapeHtml(item.activeIngredient || "Sem princípio ativo confirmado")}</span>
           <span class="history-item-meta">${escapeHtml(dateLabel)}</span>
         </button>
       `;
@@ -707,23 +707,23 @@ function analysisToPlainText(analysis) {
   const medicine = analysis?.identifiedMedicine || {};
   const summary = analysis?.bulaResumo || {};
 
-  sections.push("Remedio identificado");
-  sections.push(`Nome: ${medicine.name || "Nao identificado"}`);
-  sections.push(`Principio ativo: ${medicine.activeIngredient || "Nao confirmado"}`);
-  sections.push(`Dosagem: ${medicine.dosage || "Nao confirmada"}`);
-  sections.push(`Forma farmaceutica: ${medicine.pharmaceuticalForm || "Nao confirmada"}`);
-  sections.push(`Confianca: ${medicine.confidence || "baixa"}`);
+  sections.push("Remédio identificado");
+  sections.push(`Nome: ${medicine.name || "Não identificado"}`);
+  sections.push(`Princípio ativo: ${medicine.activeIngredient || "Não confirmado"}`);
+  sections.push(`Dosagem: ${medicine.dosage || "Não confirmada"}`);
+  sections.push(`Forma farmacêutica: ${medicine.pharmaceuticalForm || "Não confirmada"}`);
+  sections.push(`Confiança: ${medicine.confidence || "baixa"}`);
 
-  appendArraySection(sections, "Evidencias na imagem", analysis?.evidenceInImage);
+  appendArraySection(sections, "Evidências na imagem", analysis?.evidenceInImage);
   appendArraySection(sections, "Para que costuma ser usado", summary.commonUses);
   appendArraySection(sections, "Cuidados gerais", summary.generalCare);
   appendArraySection(sections, "Alertas", summary.warnings);
   appendArraySection(sections, "Efeitos colaterais comuns", summary.commonSideEffects);
-  appendArraySection(sections, "Interacoes", summary.interactions);
-  appendArraySection(sections, "Limites da analise", analysis?.analysisLimits);
+  appendArraySection(sections, "Interações", summary.interactions);
+  appendArraySection(sections, "Limites da análise", analysis?.analysisLimits);
   appendArraySection(sections, "Qualidade da imagem", analysis?.imageQuality?.issues);
   appendArraySection(sections, "Quando procurar um profissional", analysis?.seekProfessionalHelp);
-  appendArraySection(sections, "Proximos passos sugeridos", analysis?.suggestedNextSteps);
+  appendArraySection(sections, "Próximos passos sugeridos", analysis?.suggestedNextSteps);
   appendArraySection(
     sections,
     "Fontes oficiais recomendadas",
@@ -744,7 +744,7 @@ function appendArraySection(target, title, values) {
   target.push(title);
 
   if (!Array.isArray(values) || values.length === 0) {
-    target.push("- Nao informado");
+    target.push("- Não informado");
     return;
   }
 
